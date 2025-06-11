@@ -1,0 +1,78 @@
+{
+  "name": "mern-template",
+  "version": "1.0.0",
+  "description": "Comprehensive MERN stack template with authentication and debugging tools",
+  "author": "Your Name",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "setup": "npm install && npm run setup:client && npm run setup:server && npm run setup:shared",
+    "setup:client": "cd client && npm install",
+    "setup:server": "cd server && npm install",
+    "setup:shared": "cd shared && npm install",
+    
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\" \"npm run dev:debug\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "dev:debug": "cd debug-dashboard && python -m http.server 8080 || npx http-server -p 8080",
+    
+    "build": "npm run build:shared && npm run build:client && npm run build:server",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "build:shared": "cd shared && npm run build",
+    
+    "test": "npm run test:shared && npm run test:client && npm run test:server",
+    "test:client": "cd client && npm run test",
+    "test:server": "cd server && npm run test",
+    "test:shared": "cd shared && npm run test",
+    "test:e2e": "cd client && npm run test:e2e",
+    
+    "db:migrate": "cd server && npx prisma migrate dev",
+    "db:seed": "cd server && npx prisma db seed",
+    "db:studio": "cd server && npx prisma studio",
+    "db:generate": "cd server && npx prisma generate",
+    "db:reset": "cd server && npx prisma migrate reset",
+    
+    "lint": "npm run lint:client && npm run lint:server",
+    "lint:client": "cd client && npm run lint",
+    "lint:server": "cd server && npm run lint",
+    "lint:fix": "npm run lint:client -- --fix && npm run lint:server -- --fix",
+    
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "docker:logs": "docker-compose logs -f",
+    
+    "deploy": "npm run build && echo 'Ready for Railway deployment'",
+    "start": "cd server && npm start",
+    "clean": "rm -rf node_modules client/node_modules server/node_modules shared/node_modules client/dist server/dist shared/dist"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/mern-template.git"
+  },
+  "keywords": [
+    "mern",
+    "react",
+    "nodejs",
+    "mongodb",
+    "express",
+    "typescript",
+    "template",
+    "authentication",
+    "debugging"
+  ]
+}

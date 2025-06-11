@@ -1,0 +1,267 @@
+// server/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ==============================================
+// User & Authentication Models
+// ==============================================
+
+model User {
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
+  email             String            @unique
+  username          String?           @unique
+  firstName         String?
+  lastName          String?
+  avatar            String?
+  passwordHash      String?
+  isEmailVerified   Boolean           @default(false)
+  emailVerifyToken  String?
+  role              UserRole          @default(USER)
+  provider          AuthProvider      @default(EMAIL)
+  providerId        String?
+  lastLoginAt       DateTime?
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  profile           UserProfile?
+  refreshTokens     RefreshToken[]
+  files             File[]
+  emailJobs         EmailJob[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String            @unique @db.ObjectId
+  bio            String?
+  phoneNumber    String?
+  dateOfBirth    DateTime?
+  address        Address?
+  preferences    UserPreferences
+  socialLinks    SocialLinks?
+  metadata       Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  // Relations
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model RefreshToken {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  token      String    @unique
+  userId     String    @db.ObjectId
+  isRevoked  Boolean   @default(false)
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  // Relations
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// ==============================================
+// File Upload Models
+// ==============================================
+
+model File {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  originalName String
+  fileName     String
+  mimeType     String
+  size         Int
+  url          String
+  publicId     String?     // For Cloudinary
+  uploadPath   String?     // Local file path
+  uploadedBy   String      @db.ObjectId
+  isPublic     Boolean     @default(false)
+  metadata     Json?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relations
+  user         User        @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+
+  @@map("files")
+}
+
+// ==============================================
+// Email Models
+// ==============================================
+
+model EmailTemplate {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  name         String    @unique
+  subject      String
+  htmlContent  String
+  textContent  String?
+  variables    String[]  @default([])
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  emailJobs    EmailJob[]
+
+  @@map("email_templates")
+}
+
+model EmailJob {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  to           String[]
+  subject      String
+  templateId   String?     @db.ObjectId
+  variables    Json?
+  htmlContent  String?
+  textContent  String?
+  status       EmailStatus @default(PENDING)
+  sentAt       DateTime?
+  error        String?
+  userId       String?     @db.ObjectId
+  metadata     Json?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  // Relations
+  template     EmailTemplate? @relation(fields: [templateId], references: [id])
+  user         User?          @relation(fields: [userId], references: [id])
+
+  @@map("email_jobs")
+}
+
+// ==============================================
+// Notification Models
+// ==============================================
+
+model Notification {
+  id           String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String            @db.ObjectId
+  type         NotificationType
+  title        String
+  message      String
+  data         Json?
+  isRead       Boolean           @default(false)
+  readAt       DateTime?
+  expiresAt    DateTime?
+  createdAt    DateTime          @default(now())
+
+  // Relations
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// ==============================================
+// Audit & Logging Models
+// ==============================================
+
+model AuditLog {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String?   @db.ObjectId
+  action       String
+  resource     String
+  resourceId   String?
+  oldValues    Json?
+  newValues    Json?
+  ipAddress    String?
+  userAgent    String?
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+
+  // Relations
+  user         User?     @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+// ==============================================
+// System Models
+// ==============================================
+
+model SystemSetting {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  key          String    @unique
+  value        Json
+  description  String?
+  isPublic     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("system_settings")
+}
+
+// ==============================================
+// Enums
+// ==============================================
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  GITHUB
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+  BOUNCED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  UPLOAD_COMPLETE
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+// ==============================================
+// Embedded Types
+// ==============================================
+
+type Address {
+  street   String?
+  city     String?
+  state    String?
+  zipCode  String?
+  country  String?
+}
+
+type SocialLinks {
+  website  String?
+  twitter  String?
+  linkedin String?
+  github   String?
+}
+
+type UserPreferences {
+  theme               String  @default("system") // light, dark, system
+  language            String  @default("en")
+  timezone            String  @default("UTC")
+  emailNotifications  Boolean @default(true)
+  pushNotifications   Boolean @default(true)
+}

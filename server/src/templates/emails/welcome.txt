@@ -1,0 +1,34 @@
+{{!-- server/src/templates/emails/welcome.txt --}}
+Welcome to MERN Template!
+
+Hi {{firstName}}!
+
+Welcome to MERN Template! We're excited to have you on board. Your account has been successfully created and you're ready to start building amazing applications.
+
+Access your dashboard: {{dashboardUrl}}
+
+What can you do now?
+
+FILE MANAGEMENT
+Upload, organize, and manage your files with built-in cloud storage support.
+
+PROFILE MANAGEMENT  
+Customize your profile, upload an avatar, and manage your account settings.
+
+SECURITY FEATURES
+Enjoy secure authentication with OAuth support and comprehensive security measures.
+
+DEVELOPER TOOLS
+Access debugging tools and comprehensive APIs for building your applications.
+
+Need help getting started?
+- Dashboard Overview: {{dashboardUrl}}
+- Upload Your First File: {{dashboardUrl}}/files
+- Complete Your Profile: {{dashboardUrl}}/profile  
+- Account Settings: {{dashboardUrl}}/settings
+
+If you have any questions or need assistance, feel free to reach out to our support team.
+
+Happy building! 🚀
+
+© 2025 MERN Template. All rights reserved.

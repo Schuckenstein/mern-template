@@ -1,0 +1,41 @@
+{{!-- server/src/templates/emails/verification.txt --}}
+Welcome to MERN Template!
+
+Please verify your email address to complete your registration.
+
+Verification Link: {{verificationUrl}}
+
+This verification link will expire in 24 hours.
+
+Why verify your email?
+- Secure your account
+- Receive important updates  
+- Reset your password if needed
+- Access all features
+
+If you didn't create an account with us, you can safely ignore this email.
+
+© 2025 MERN Template. All rights reserved.
+
+{{!-- server/src/templates/emails/password-reset.txt --}}
+Password Reset Request
+
+We received a request to reset the password for your MERN Template account.
+
+Reset Password Link: {{resetUrl}}
+
+IMPORTANT SECURITY INFORMATION:
+- This password reset link will expire in 1 hour
+- This link can only be used once  
+- If you didn't request this reset, please ignore this email
+- Your password will not be changed unless you click the link and set a new one
+
+Tips for a secure password:
+- Use at least 8 characters
+- Include uppercase and lowercase letters
+- Add numbers and special characters
+- Don't reuse passwords from other accounts
+
+If you continue to have problems, please contact our support team.
+
+© 2025 MERN Template. All rights reserved.

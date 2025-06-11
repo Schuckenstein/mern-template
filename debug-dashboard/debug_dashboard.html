@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MERN Template - Debug Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --warning-color: #ed8936;
+            --error-color: #e53e3e;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+            --text-light: #718096;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online { background-color: var(--success-color); }
+        .status-offline { background-color: var(--error-color); }
+        .status-warning { background-color: var(--warning-color); }
+
+        .tabs {
+            display: flex;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            background: var(--bg-color);
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--text-light);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+        }
+
+        .btn-error {
+            background: var(--error-color);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .input-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .log-viewer {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .response-viewer {
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .json-viewer {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.3s ease;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th {
+            background: var(--bg-color);
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-success { background: var(--success-color); color: white; }
+        .badge-warning { background: var(--warning-color); color: white; }
+        .badge-error { background: var(--error-color); color: white; }
+        .badge-info { background: var(--primary-color); color: white; }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border-color);
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+
+        .notification.success { background: var(--success-color); }
+        .notification.error { background: var(--error-color); }
+        .notification.warning { background: var(--warning-color); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .endpoint-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .endpoint-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s;
+        }
+
+        .endpoint-item:hover {
+            background: var(--bg-color);
+        }
+
+        .endpoint-item:last-child {
+            border-bottom: none;
+        }
+
+        .method-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 8px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .method-get { background: var(--success-color); color: white; }
+        .method-post { background: var(--primary-color); color: white; }
+        .method-put { background: var(--warning-color); color: white; }
+        .method-delete { background: var(--error-color); color: white; }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                margin-right: 0;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ MERN Template Debug Dashboard</h1>
+            <p>
+                <span class="status-indicator status-online" id="serverStatus"></span>
+                Server Status: <span id="serverStatusText">Checking...</span>
+                <span style="margin-left: 20px;">
+                    <span class="status-indicator status-online" id="dbStatus"></span>
+                    Database: <span id="dbStatusText">Checking...</span>
+                </span>
+            </p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('overview')">📊 Overview</div>
+            <div class="tab" onclick="switchTab('api-tester')">🔧 API Tester</div>
+            <div class="tab" onclick="switchTab('database')">🗄️ Database</div>
+            <div class="tab" onclick="switchTab('auth')">🔐 Auth</div>
+            <div class="tab" onclick="switchTab('files')">📁 Files</div>
+            <div class="tab" onclick="switchTab('email')">📧 Email</div>
+            <div class="tab" onclick="switchTab('logs')">📋 Logs</div>
+            <div class="tab" onclick="switchTab('performance')">⚡ Performance</div>
+            <div class="tab" onclick="switchTab('websocket')">🔌 WebSocket</div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <h3>🖥️ Server Info</h3>
+                    <div class="metric">
+                        <span>Uptime</span>
+                        <span class="metric-value" id="uptime">-</span>
+                    </div>
+                    <div class="metric">
+                        <span>Environment</span>
+                        <span class="metric-value" id="environment">-</span>
+                    </div>
+                    <div class="metric">
+                        <span>Node Version</span>
+                        <span class="metric-value" id="nodeVersion">-</span>
+                    </div>
+                    <div class="metric">
+                        <span>Memory Usage</span>
+                        <span class="metric-value" id="memoryUsage">-</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>👥 Users</h3>
+                    <div class="metric">
+                        <span>Total Users</span>
+                        <span class="metric-value" id="totalUsers">-</span>
+                    </div>
+                    <div class="metric">
+                        <span>Active Users</span>
+                        <span class="metric-value" id="activeUsers">-</span>
+                    </div>
+                    <div class="metric">
+                        <span>Verified Users</span>
+                        <span class="metric-value" id="verifiedUsers">-</span>
+                    </div>
+                    <div class="metric">
+                        <span>Admins</span>
+                        <span class="metric-value" id="adminUsers">-</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>📈 Performance</h3>
+                    <div class="metric">
+                        <span>Requests Today</span>
+                        <span class="metric-value" id="requestsToday">-</span>
+                    </div>
+                    <div class="metric">
+                        <span>Avg Response Time</span>
+                        <span class="metric-value" id="avgResponseTime">-</span>
+                    </div>
+                    <div class="metric">
+                        <span>Error Rate</span>
+                        <span class="metric-value" id="errorRate">-</span>
+                    </div>
+                    <div class="metric">
+                        <span>Active Connections</span>
+                        <span class="metric-value" id="activeConnections">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>🔄 Quick Actions</h3>
+                <button class="btn" onclick="refreshData()">🔄 Refresh All Data</button>
+                <button class="btn btn-warning" onclick="clearCache()">🗑️ Clear Cache</button>
+                <button class="btn btn-secondary" onclick="exportLogs()">📥 Export Logs</button>
+                <button class="btn btn-success" onclick="runHealthCheck()">🩺 Health Check</button>
+            </div>
+        </div>
+
+        <!-- API Tester Tab -->
+        <div id="api-tester" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>🌐 API Endpoints</h3>
+                    <div class="endpoint-list" id="endpointList">
+                        <!-- Will be populated dynamically -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Request Builder</h3>
+                    <div class="input-group">
+                        <label>Method</label>
+                        <select id="apiMethod">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Endpoint</label>
+                        <input type="text" id="apiEndpoint" placeholder="/api/users" />
+                    </div>
+                    <div class="input-group">
+                        <label>Headers (JSON)</label>
+                        <textarea id="apiHeaders" placeholder='{"Authorization": "Bearer token"}'></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Body (JSON)</label>
+                        <textarea id="apiBody" placeholder='{"key": "value"}'></textarea>
+                    </div>
+                    <button class="btn" onclick="sendApiRequest()">🚀 Send Request</button>
+                    <button class="btn btn-secondary" onclick="saveRequest()">💾 Save</button>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>📋 Response</h3>
+                <div id="apiResponse" class="response-viewer">Click "Send Request" to see response</div>
+            </div>
+        </div>
+
+        <!-- Database Tab -->
+        <div id="database" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>🗄️ Collections</h3>
+                    <div id="collectionsList">Loading...</div>
+                </div>
+
+                <div class="card">
+                    <h3>🔍 Query Builder</h3>
+                    <div class="input-group">
+                        <label>Collection</label>
+                        <select id="dbCollection">
+                            <option value="users">Users</option>
+                            <option value="files">Files</option>
+                            <option value="emailJobs">Email Jobs</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Query (JSON)</label>
+                        <textarea id="dbQuery" placeholder='{"email": "user@example.com"}'></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Limit</label>
+                        <input type="number" id="dbLimit" value="10" min="1" max="100" />
+                    </div>
+                    <button class="btn" onclick="runDbQuery()">🔎 Execute Query</button>
+                    <button class="btn btn-warning" onclick="clearDbQuery()">🗑️ Clear</button>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>📊 Results</h3>
+                <div id="dbResults" class="json-viewer">Execute a query to see results</div>
+            </div>
+        </div>
+
+        <!-- Auth Tab -->
+        <div id="auth" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>🔐 Test Authentication</h3>
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="authEmail" placeholder="test@example.com" />
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="authPassword" placeholder="password" />
+                    </div>
+                    <button class="btn" onclick="testLogin()">🔑 Test Login</button>
+                    <button class="btn btn-success" onclick="testRegister()">👤 Test Register</button>
+                    <button class="btn btn-warning" onclick="testLogout()">🚪 Test Logout</button>
+                </div>
+
+                <div class="card">
+                    <h3>🎫 Token Management</h3>
+                    <div class="input-group">
+                        <label>Current Token</label>
+                        <textarea id="currentToken" readonly></textarea>
+                    </div>
+                    <button class="btn" onclick="refreshToken()">🔄 Refresh Token</button>
+                    <button class="btn btn-error" onclick="revokeToken()">❌ Revoke Token</button>
+                    <button class="btn btn-secondary" onclick="decodeToken()">🔍 Decode Token</button>
+                </div>
+
+                <div class="card">
+                    <h3>👥 User Management</h3>
+                    <div class="input-group">
+                        <label>User ID</label>
+                        <input type="text" id="userId" placeholder="User ID" />
+                    </div>
+                    <button class="btn" onclick="getUserInfo()">ℹ️ Get User Info</button>
+                    <button class="btn btn-warning" onclick="banUser()">🚫 Ban User</button>
+                    <button class="btn btn-success" onclick="unbanUser()">✅ Unban User</button>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>📋 Auth Results</h3>
+                <div id="authResults" class="response-viewer">Test authentication to see results</div>
+            </div>
+        </div>
+
+        <!-- Files Tab -->
+        <div id="files" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>📁 File Upload Test</h3>
+                    <div class="input-group">
+                        <label>Select File</label>
+                        <input type="file" id="testFile" multiple />
+                    </div>
+                    <div class="progress-bar" style="display: none;" id="uploadProgress">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <button class="btn" onclick="testFileUpload()">📤 Upload File</button>
+                    <button class="btn btn-secondary" onclick="listFiles()">📋 List Files</button>
+                </div>
+
+                <div class="card">
+                    <h3>🗄️ File Management</h3>
+                    <div class="input-group">
+                        <label>File ID</label>
+                        <input type="text" id="fileId" placeholder="File ID" />
+                    </div>
+                    <button class="btn" onclick="getFileInfo()">ℹ️ Get Info</button>
+                    <button class="btn btn-warning" onclick="deleteFile()">🗑️ Delete</button>
+                    <button class="btn btn-success" onclick="downloadFile()">⬇️ Download</button>
+                </div>
+
+                <div class="card">
+                    <h3>📊 Storage Stats</h3>
+                    <div id="storageStats">Loading...</div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>📋 File Results</h3>
+                <div id="fileResults" class="response-viewer">Upload or manage files to see results</div>
+            </div>
+        </div>
+
+        <!-- Email Tab -->
+        <div id="email" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>📧 Test Email</h3>
+                    <div class="input-group">
+                        <label>To</label>
+                        <input type="email" id="emailTo" placeholder="recipient@example.com" />
+                    </div>
+                    <div class="input-group">
+                        <label>Subject</label>
+                        <input type="text" id="emailSubject" placeholder="Test Subject" />
+                    </div>
+                    <div class="input-group">
+                        <label>Message</label>
+                        <textarea id="emailMessage" placeholder="Test message content"></textarea>
+                    </div>
+                    <button class="btn" onclick="sendTestEmail()">📨 Send Test Email</button>
+                    <button class="btn btn-secondary" onclick="previewEmail()">👁️ Preview</button>
+                </div>
+
+                <div class="card">
+                    <h3>📄 Email Templates</h3>
+                    <div class="input-group">
+                        <label>Template</label>
+                        <select id="emailTemplate">
+                            <option value="welcome">Welcome Email</option>
+                            <option value="verification">Email Verification</option>
+                            <option value="reset">Password Reset</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="loadTemplate()">📄 Load Template</button>
+                    <button class="btn btn-success" onclick="createTemplate()">➕ Create New</button>
+                </div>
+
+                <div class="card">
+                    <h3>📊 Email Stats</h3>
+                    <div id="emailStats">Loading...</div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>📋 Email Results</h3>
+                <div id="emailResults" class="response-viewer">Send emails to see results</div>
+            </div>
+        </div>
+
+        <!-- Logs Tab -->
+        <div id="logs" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>🎛️ Log Controls</h3>
+                    <div class="input-group">
+                        <label>Log Level</label>
+                        <select id="logLevel">
+                            <option value="all">All</option>
+                            <option value="error">Error</option>
+                            <option value="warn">Warning</option>
+                            <option value="info">Info</option>
+                            <option value="debug">Debug</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Filter</label>
+                        <input type="text" id="logFilter" placeholder="Filter logs..." />
+                    </div>
+                    <button class="btn" onclick="refreshLogs()">🔄 Refresh</button>
+                    <button class="btn btn-warning" onclick="clearLogs()">🗑️ Clear</button>
+                    <button class="btn btn-secondary" onclick="exportLogs()">📥 Export</button>
+                </div>
+
+                <div class="card">
+                    <h3>⚙️ Log Settings</h3>
+                    <label>
+                        <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()"> Auto-refresh logs
+                    </label>
+                    <br><br>
+                    <label>
+                        <input type="checkbox" id="followLogs" checked> Follow latest logs
+                    </label>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>📋 Live Logs</h3>
+                <div id="logViewer" class="log-viewer">Connecting to log stream...</div>
+            </div>
+        </div>
+
+        <!-- Performance Tab -->
+        <div id="performance" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>⚡ Performance Metrics</h3>
+                    <div id="performanceMetrics">Loading...</div>
+                </div>
+
+                <div class="card">
+                    <h3>🐌 Slow Queries</h3>
+                    <div id="slowQueries">Loading...</div>
+                </div>
+
+                <div class="card">
+                    <h3>🔥 Hot Endpoints</h3>
+                    <div id="hotEndpoints">Loading...</div>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>📊 Performance Charts</h3>
+                <canvas id="performanceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- WebSocket Tab -->
+        <div id="websocket" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <h3>🔌 WebSocket Connection</h3>
+                    <div class="metric">
+                        <span>Status</span>
+                        <span class="metric-value" id="wsStatus">Disconnected</span>
+                    </div>
+                    <button class="btn" onclick="connectWebSocket()">🔗 Connect</button>
+                    <button class="btn btn-error" onclick="disconnectWebSocket()">❌ Disconnect</button>
+                </div>
+
+                <div class="card">
+                    <h3>📨 Send Message</h3>
+                    <div class="input-group">
+                        <label>Message Type</label>
+                        <select id="wsMessageType">
+                            <option value="test">Test</option>
+                            <option value="notification">Notification</option>
+                            <option value="debug">Debug</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Payload (JSON)</label>
+                        <textarea id="wsPayload" placeholder='{"message": "Hello WebSocket!"}'></textarea>
+                    </div>
+                    <button class="btn" onclick="sendWebSocketMessage()">📤 Send</button>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <h3>📋 WebSocket Messages</h3>
+                <div id="wsMessages" class="log-viewer">Connect to WebSocket to see messages...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentTab = 'overview';
+        let authToken = localStorage.getItem('debugToken');
+        let autoRefreshInterval;
+        let wsConnection;
+
+        // API Configuration
+        const API_BASE = 'http://localhost:5000/api';
+        const WS_URL = 'http://localhost:5000';
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to selected tab
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+            
+            // Load tab-specific data
+            loadTabData(tabName);
+        }
+
+        // Load data for specific tab
+        function loadTabData(tabName) {
+            switch(tabName) {
+                case 'overview':
+                    loadOverviewData();
+                    break;
+                case 'api-tester':
+                    loadApiEndpoints();
+                    break;
+                case 'database':
+                    loadDatabaseInfo();
+                    break;
+                case 'files':
+                    loadStorageStats();
+                    break;
+                case 'email':
+                    loadEmailStats();
+                    break;
+                case 'logs':
+                    refreshLogs();
+                    break;
+                case 'performance':
+                    loadPerformanceData();
+                    break;
+                case 'websocket':
+                    updateWebSocketStatus();
+                    break;
+            }
+        }
+
+        // API Helper functions
+        async function apiRequest(endpoint, options = {}) {
+            const url = `${API_BASE}${endpoint}`;
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+                    ...(options.headers || {})
+                },
+                ...options
+            };
+
+            try {
+                const response = await fetch(url, config);
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Overview functions
+        async function loadOverviewData() {
+            try {
+                const result = await apiRequest('/debug/info');
+                if (result.success) {
+                    const data = result.data;
+                    
+                    // Update server info
+                    document.getElementById('uptime').textContent = formatUptime(data.server.uptime);
+                    document.getElementById('environment').textContent = data.server.environment;
+                    document.getElementById('nodeVersion').textContent = data.server.nodeVersion;
+                    document.getElementById('memoryUsage').textContent = formatBytes(data.server.memoryUsage.used);
+                    
+                    // Update user stats
+                    document.getElementById('totalUsers').textContent = data.auth.totalUsers;
+                    document.getElementById('activeUsers').textContent = data.auth.activeUsers;
+                    document.getElementById('verifiedUsers').textContent = data.auth.verifiedUsers;
+                    document.getElementById('adminUsers').textContent = data.auth.adminUsers || 0;
+                    
+                    // Update performance
+                    document.getElementById('requestsToday').textContent = data.performance.requestCount;
+                    document.getElementById('avgResponseTime').textContent = `${data.performance.averageResponseTime}ms`;
+                    document.getElementById('errorRate').textContent = `${data.performance.errorRate}%`;
+                    document.getElementById('activeConnections').textContent = data.performance.activeConnections || 0;
+                }
+            } catch (error) {
+                console.error('Failed to load overview data:', error);
+            }
+        }
+
+        // API Tester functions
+        function loadApiEndpoints() {
+            const endpoints = [
+                { method: 'GET', path: '/auth/me', description: 'Get current user' },
+                { method: 'POST', path: '/auth/login', description: 'User login' },
+                { method: 'POST', path: '/auth/register', description: 'User registration' },
+                { method: 'POST', path: '/auth/logout', description: 'User logout' },
+                { method: 'GET', path: '/users/profile', description: 'Get user profile' },
+                { method: 'PUT', path: '/users/profile', description: 'Update user profile' },
+                { method: 'POST', path: '/files/upload', description: 'Upload file' },
+                { method: 'GET', path: '/files', description: 'List files' },
+                { method: 'DELETE', path: '/files/:id', description: 'Delete file' },
+                { method: 'GET', path: '/debug/health', description: 'Health check' },
+                { method: 'GET', path: '/debug/info', description: 'System info' }
+            ];
+
+            const container = document.getElementById('endpointList');
+            container.innerHTML = endpoints.map(endpoint => `
+                <div class="endpoint-item" onclick="selectEndpoint('${endpoint.method}', '${endpoint.path}')">
+                    <span class="method-badge method-${endpoint.method.toLowerCase()}">${endpoint.method}</span>
+                    <strong>${endpoint.path}</strong><br>
+                    <small>${endpoint.description}</small>
+                </div>
+            `).join('');
+        }
+
+        function selectEndpoint(method, path) {
+            document.getElementById('apiMethod').value = method;
+            document.getElementById('apiEndpoint').value = path;
+        }
+
+        async function sendApiRequest() {
+            const method = document.getElementById('apiMethod').value;
+            const endpoint = document.getElementById('apiEndpoint').value;
+            const headersText = document.getElementById('apiHeaders').value;
+            const bodyText = document.getElementById('apiBody').value;
+
+            let headers = {};
+            let body = null;
+
+            try {
+                if (headersText) {
+                    headers = JSON.parse(headersText);
+                }
+                if (bodyText && ['POST', 'PUT', 'PATCH'].includes(method)) {
+                    body = bodyText;
+                }
+            } catch (error) {
+                showNotification('Invalid JSON in headers or body', 'error');
+                return;
+            }
+
+            const result = await apiRequest(endpoint, { method, headers, body });
+            
+            document.getElementById('apiResponse').innerHTML = `
+                <h4>Status: ${result.status || 'Error'}</h4>
+                <pre>${JSON.stringify(result.data || result.error, null, 2)}</pre>
+            `;
+        }
+
+        // Database functions
+        async function loadDatabaseInfo() {
+            try {
+                const result = await apiRequest('/debug/database');
+                if (result.success) {
+                    const collections = result.data.collections;
+                    const container = document.getElementById('collectionsList');
+                    
+                    container.innerHTML = collections.map(col => `
+                        <div class="metric">
+                            <span>${col.name}</span>
+                            <span class="metric-value">${col.documentCount} docs</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load database info:', error);
+            }
+        }
+
+        async function runDbQuery() {
+            const collection = document.getElementById('dbCollection').value;
+            const queryText = document.getElementById('dbQuery').value;
+            const limit = document.getElementById('dbLimit').value;
+
+            let query = {};
+            try {
+                if (queryText) {
+                    query = JSON.parse(queryText);
+                }
+            } catch (error) {
+                showNotification('Invalid JSON query', 'error');
+                return;
+            }
+
+            const result = await apiRequest('/debug/database/query', {
+                method: 'POST',
+                body: JSON.stringify({ collection, query, limit: parseInt(limit) })
+            });
+
+            document.getElementById('dbResults').textContent = JSON.stringify(result.data, null, 2);
+        }
+
+        // Auth functions
+        async function testLogin() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+
+            const result = await apiRequest('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+
+            if (result.success && result.data.accessToken) {
+                authToken = result.data.accessToken;
+                localStorage.setItem('debugToken', authToken);
+                document.getElementById('currentToken').value = authToken;
+                showNotification('Login successful');
+            }
+
+            document.getElementById('authResults').innerHTML = `
+                <h4>Login Result</h4>
+                <pre>${JSON.stringify(result.data || result.error, null, 2)}</pre>
+            `;
+        }
+
+        // File functions
+        async function testFileUpload() {
+            const fileInput = document.getElementById('testFile');
+            const files = fileInput.files;
+
+            if (!files.length) {
+                showNotification('Please select a file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            Array.from(files).forEach(file => {
+                formData.append('files', file);
+            });
+
+            const progressBar = document.getElementById('uploadProgress');
+            const progressFill = progressBar.querySelector('.progress-fill');
+            progressBar.style.display = 'block';
+
+            try {
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentage = (e.loaded / e.total) * 100;
+                        progressFill.style.width = `${percentage}%`;
+                    }
+                });
+
+                xhr.addEventListener('load', () => {
+                    progressBar.style.display = 'none';
+                    const result = JSON.parse(xhr.responseText);
+                    document.getElementById('fileResults').innerHTML = `
+                        <h4>Upload Result</h4>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                    
+                    if (xhr.status === 200) {
+                        showNotification('File uploaded successfully');
+                    } else {
+                        showNotification('Upload failed', 'error');
+                    }
+                });
+
+                xhr.open('POST', `${API_BASE}/files/upload`);
+                if (authToken) {
+                    xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
+                }
+                xhr.send(formData);
+            } catch (error) {
+                progressBar.style.display = 'none';
+                showNotification('Upload error: ' + error.message, 'error');
+            }
+        }
+
+        // Email functions
+        async function sendTestEmail() {
+            const to = document.getElementById('emailTo').value;
+            const subject = document.getElementById('emailSubject').value;
+            const message = document.getElementById('emailMessage').value;
+
+            const result = await apiRequest('/debug/email/test', {
+                method: 'POST',
+                body: JSON.stringify({ to, subject, message })
+            });
+
+            document.getElementById('emailResults').innerHTML = `
+                <h4>Email Result</h4>
+                <pre>${JSON.stringify(result.data || result.error, null, 2)}</pre>
+            `;
+
+            if (result.success) {
+                showNotification('Test email sent successfully');
+            } else {
+                showNotification('Failed to send email', 'error');
+            }
+        }
+
+        // Log functions
+        function refreshLogs() {
+            const logViewer = document.getElementById('logViewer');
+            const level = document.getElementById('logLevel').value;
+            const filter = document.getElementById('logFilter').value;
+
+            // Simulate log fetching
+            logViewer.textContent = 'Fetching logs...\n';
+            
+            setTimeout(() => {
+                logViewer.textContent += `[${new Date().toISOString()}] INFO: Server started\n`;
+                logViewer.textContent += `[${new Date().toISOString()}] DEBUG: Database connected\n`;
+                logViewer.textContent += `[${new Date().toISOString()}] INFO: Ready to accept connections\n`;
+                
+                if (document.getElementById('followLogs').checked) {
+                    logViewer.scrollTop = logViewer.scrollHeight;
+                }
+            }, 500);
+        }
+
+        function toggleAutoRefresh() {
+            const enabled = document.getElementById('autoRefresh').checked;
+            
+            if (enabled) {
+                autoRefreshInterval = setInterval(refreshLogs, 5000);
+                showNotification('Auto-refresh enabled');
+            } else {
+                clearInterval(autoRefreshInterval);
+                showNotification('Auto-refresh disabled');
+            }
+        }
+
+        // WebSocket functions
+        function connectWebSocket() {
+            if (wsConnection) {
+                wsConnection.close();
+            }
+
+            wsConnection = new WebSocket(`ws://localhost:5000/socket.io/?EIO=4&transport=websocket`);
+            
+            wsConnection.onopen = () => {
+                document.getElementById('wsStatus').textContent = 'Connected';
+                showNotification('WebSocket connected');
+                updateWebSocketStatus();
+            };
+
+            wsConnection.onmessage = (event) => {
+                const messages = document.getElementById('wsMessages');
+                messages.textContent += `[${new Date().toISOString()}] ${event.data}\n`;
+                messages.scrollTop = messages.scrollHeight;
+            };
+
+            wsConnection.onclose = () => {
+                document.getElementById('wsStatus').textContent = 'Disconnected';
+                updateWebSocketStatus();
+            };
+
+            wsConnection.onerror = (error) => {
+                showNotification('WebSocket error: ' + error.message, 'error');
+            };
+        }
+
+        function disconnectWebSocket() {
+            if (wsConnection) {
+                wsConnection.close();
+                wsConnection = null;
+                showNotification('WebSocket disconnected');
+            }
+        }
+
+        function updateWebSocketStatus() {
+            const status = document.getElementById('wsStatus');
+            const isConnected = wsConnection && wsConnection.readyState === WebSocket.OPEN;
+            status.textContent = isConnected ? 'Connected' : 'Disconnected';
+        }
+
+        function sendWebSocketMessage() {
+            if (!wsConnection || wsConnection.readyState !== WebSocket.OPEN) {
+                showNotification('WebSocket not connected', 'error');
+                return;
+            }
+
+            const type = document.getElementById('wsMessageType').value;
+            const payloadText = document.getElementById('wsPayload').value;
+
+            try {
+                const payload = JSON.parse(payloadText);
+                const message = JSON.stringify({ type, payload });
+                wsConnection.send(message);
+                showNotification('Message sent');
+            } catch (error) {
+                showNotification('Invalid JSON payload', 'error');
+            }
+        }
+
+        // Utility functions
+        function formatUptime(seconds) {
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            return `${days}d ${hours}h ${minutes}m`;
+        }
+
+        function formatBytes(bytes) {
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            if (bytes === 0) return '0 B';
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Quick action functions
+        async function refreshData() {
+            showNotification('Refreshing all data...');
+            await loadTabData(currentTab);
+            showNotification('Data refreshed');
+        }
+
+        async function clearCache() {
+            const result = await apiRequest('/debug/cache/clear', { method: 'POST' });
+            if (result.success) {
+                showNotification('Cache cleared');
+            } else {
+                showNotification('Failed to clear cache', 'error');
+            }
+        }
+
+        async function runHealthCheck() {
+            const result = await apiRequest('/debug/health');
+            if (result.success) {
+                showNotification('Health check passed');
+            } else {
+                showNotification('Health check failed', 'error');
+            }
+        }
+
+        // Initialize dashboard
+        async function initDashboard() {
+            // Check server status
+            try {
+                const healthResult = await apiRequest('/debug/health');
+                const serverStatus = document.getElementById('serverStatus');
+                const serverStatusText = document.getElementById('serverStatusText');
+                const dbStatus = document.getElementById('dbStatus');
+                const dbStatusText = document.getElementById('dbStatusText');
+
+                if (healthResult.success) {
+                    serverStatus.className = 'status-indicator status-online';
+                    serverStatusText.textContent = 'Online';
+                    
+                    if (healthResult.data.database) {
+                        dbStatus.className = 'status-indicator status-online';
+                        dbStatusText.textContent = 'Connected';
+                    } else {
+                        dbStatus.className = 'status-indicator status-error';
+                        dbStatusText.textContent = 'Disconnected';
+                    }
+                } else {
+                    serverStatus.className = 'status-indicator status-offline';
+                    serverStatusText.textContent = 'Offline';
+                    dbStatus.className = 'status-indicator status-offline';
+                    dbStatusText.textContent = 'Unknown';
+                }
+            } catch (error) {
+                document.getElementById('serverStatus').className = 'status-indicator status-offline';
+                document.getElementById('serverStatusText').textContent = 'Offline';
+                document.getElementById('dbStatus').className = 'status-indicator status-offline';
+                document.getElementById('dbStatusText').textContent = 'Unknown';
+            }
+
+            // Load initial data
+            loadTabData(currentTab);
+
+            // Set auth token if available
+            if (authToken) {
+                document.getElementById('currentToken').value = authToken;
+            }
+        }
+
+        // Start dashboard when page loads
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

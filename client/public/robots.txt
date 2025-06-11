@@ -1,0 +1,11 @@
+<!-- client/public/robots.txt -->
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://your-domain.com/sitemap.xml
+
+# Disallow admin and debug pages from indexing
+Disallow: /admin
+Disallow: /debug
+Disallow: /api
